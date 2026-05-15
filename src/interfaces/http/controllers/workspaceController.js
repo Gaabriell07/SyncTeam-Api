@@ -1,0 +1,55 @@
+const CreateWorkspace = require('../../../application/usecases/CreateWorkspace')
+const JoinWorkspace = require('../../../application/usecases/JoinWorkspace')
+const GetWorkspace = require('../../../application/usecases/GetWorkspace')
+
+const createWorkspace = async (req, res) => {
+  try {
+    const { name, userId } = req.body
+    if (!name || !userId) {
+      return res.status(400).json({ error: 'name and userId are required' })
+    }
+
+    const usecase = new CreateWorkspace()
+    const workspace = await usecase.execute({ name, userId })
+    return res.status(201).json(workspace)
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+const joinWorkspace = async (req, res) => {
+  try {
+    const { inviteCode, userId, role } = req.body
+    if (!inviteCode || !userId) {
+      return res.status(400).json({ error: 'inviteCode and userId are required' })
+    }
+
+    const usecase = new JoinWorkspace()
+    const workspace = await usecase.execute({ inviteCode, userId, role })
+    return res.status(200).json(workspace)
+  } catch (error) {
+    if (error.message === 'WORKSPACE_NOT_FOUND') {
+      return res.status(404).json({ error: 'Workspace not found' })
+    }
+    if (error.message === 'ALREADY_A_MEMBER') {
+      return res.status(409).json({ error: 'User is already a member' })
+    }
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+const getWorkspace = async (req, res) => {
+  try {
+    const { id } = req.params
+    const usecase = new GetWorkspace()
+    const workspace = await usecase.execute(id)
+    return res.status(200).json(workspace)
+  } catch (error) {
+    if (error.message === 'WORKSPACE_NOT_FOUND') {
+      return res.status(404).json({ error: 'Workspace not found' })
+    }
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+module.exports = { createWorkspace, joinWorkspace, getWorkspace }

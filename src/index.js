@@ -3,6 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 
 const userRoutes = require('./interfaces/http/routes/userRoutes')
+const workspaceRoutes = require('./interfaces/http/routes/workspaceRoutes')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -15,6 +16,7 @@ app.get('/health', (req, res) => {
 })
 
 app.use('/api/users', userRoutes)
+app.use('/api/workspaces', workspaceRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
