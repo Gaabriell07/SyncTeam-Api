@@ -1,0 +1,40 @@
+# Dependencias
+node_modules/
+/.pnp
+.pnp.js
+
+# Entorno local (¡NUNCA SUBIR EL .ENV!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Archivos de build y compilación
+dist/
+build/
+out/
+
+# Testing
+coverage/
+
+# Prisma
+# prisma/migrations/ (NO ignorar las migraciones, esas sí deben subirse)
+*.sqlite
+
+# SO y Editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
