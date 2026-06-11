@@ -14,7 +14,8 @@ const createWorkspace = async (req, res) => {
     const workspace = await usecase.execute({ name, userId })
     return res.status(201).json(workspace)
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' })
+    console.error('Error creating workspace:', error)
+    return res.status(500).json({ error: 'Internal server error', details: error.message })
   }
 }
 

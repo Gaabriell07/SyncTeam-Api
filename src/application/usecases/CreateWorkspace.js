@@ -24,7 +24,7 @@ class CreateWorkspace {
     await this.logActivity.execute({
       userId,
       action: 'CREAR_ESPACIO',
-      details: `Has creado el espacio de trabajo "${name}".`
+      details: { message: `Has creado el espacio de trabajo "${name}".` }
     })
 
     return workspace

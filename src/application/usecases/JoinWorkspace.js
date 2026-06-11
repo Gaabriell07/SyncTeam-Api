@@ -30,7 +30,7 @@ class JoinWorkspace {
     await this.logActivity.execute({
       userId,
       action: 'UNIR_ESPACIO',
-      details: `Te has unido al espacio de trabajo "${workspace.name}".`
+      details: { message: `Te has unido al espacio de trabajo "${workspace.name}".` }
     })
 
     return workspace
