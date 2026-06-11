@@ -3,12 +3,14 @@ const TaskRepository = require('../../infrastructure/repositories/TaskRepository
 const WorkspaceRepository = require('../../infrastructure/repositories/WorkspaceRepository')
 const UserRepository = require('../../infrastructure/repositories/UserRepository')
 const emailService = require('../../infrastructure/services/EmailService')
+const LogActivity = require('./LogActivity')
 
 class CreateTask {
   constructor() {
     this.taskRepository = new TaskRepository()
     this.workspaceRepository = new WorkspaceRepository()
     this.userRepository = new UserRepository()
+    this.logActivity = new LogActivity()
   }
 
   async execute({ title, description, workspaceId, assigneeId, dueDate, userId }) {
@@ -40,6 +42,16 @@ class CreateTask {
       } catch (err) {
         console.error('Failed to send notification email on creation:', err)
       }
+    }
+
+    try {
+      await this.logActivity.execute({
+        userId,
+        action: 'CREATED_TASK',
+        details: { taskId: task.id, title: task.title, workspaceId }
+      })
+    } catch (err) {
+      console.error('Failed to log activity:', err)
     }
 
     return task

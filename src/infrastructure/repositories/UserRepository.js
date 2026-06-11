@@ -37,6 +37,21 @@ class UserRepository {
     })
     return new User(user)
   }
+
+  async updateProfile({ id, name, password }) {
+    const data = {}
+    if (name) data.name = name
+    if (password) data.password = password
+
+    const user = await prisma.user.update({
+      where: { id },
+      data
+    })
+    
+    // Do not return password hash
+    const { password: _, ...userWithoutPassword } = user
+    return userWithoutPassword
+  }
 }
 
 module.exports = UserRepository

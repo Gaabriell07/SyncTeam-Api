@@ -1,6 +1,8 @@
 const RegisterUser = require('../../../application/usecases/RegisterUser')
 const LoginUser = require('../../../application/usecases/LoginUser')
 const GetUser = require('../../../application/usecases/GetUser')
+const UpdateUserProfile = require('../../../application/usecases/UpdateUserProfile')
+const GetUserActivity = require('../../../application/usecases/GetUserActivity')
 const { v4: uuidv4 } = require('uuid')
 
 const registerUser = async (req, res) => {
@@ -65,4 +67,31 @@ const loginUser = async (req, res) => {
   }
 }
 
-module.exports = { registerUser, loginUser, getUser }
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { name, password } = req.body
+
+    const usecase = new UpdateUserProfile()
+    const updatedUser = await usecase.execute({ id: userId, name, password })
+
+    return res.status(200).json(updatedUser)
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error: ' + error.message })
+  }
+}
+
+const getActivity = async (req, res) => {
+  try {
+    const userId = req.user.id
+    
+    const usecase = new GetUserActivity()
+    const activity = await usecase.execute(userId)
+
+    return res.status(200).json(activity)
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error: ' + error.message })
+  }
+}
+
+module.exports = { registerUser, loginUser, getUser, updateProfile, getActivity }

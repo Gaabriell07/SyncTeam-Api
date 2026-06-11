@@ -1,8 +1,10 @@
 const WorkspaceRepository = require('../../infrastructure/repositories/WorkspaceRepository')
+const LogActivity = require('./LogActivity')
 
 class JoinWorkspace {
   constructor() {
     this.workspaceRepository = new WorkspaceRepository()
+    this.logActivity = new LogActivity()
   }
 
   async execute({ inviteCode, userId, role }) {
@@ -23,6 +25,12 @@ class JoinWorkspace {
       workspaceId: workspace.id,
       userId,
       role: role || 'Miembro'
+    })
+
+    await this.logActivity.execute({
+      userId,
+      action: 'UNIR_ESPACIO',
+      details: `Te has unido al espacio de trabajo "${workspace.name}".`
     })
 
     return workspace

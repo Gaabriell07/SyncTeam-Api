@@ -15,6 +15,7 @@ model User {
   availabilities Availability[]
   assignedTasks  Task[]
   memberships    WorkspaceMember[]
+  activityLogs   ActivityLog[]
 }
 
 model Workspace {
@@ -66,4 +67,13 @@ enum TaskStatus {
   TODO
   IN_PROGRESS
   DONE
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  details   Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
