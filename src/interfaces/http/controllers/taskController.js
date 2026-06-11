@@ -5,16 +5,18 @@ const AssignTask = require('../../../application/usecases/AssignTask')
 
 const createTask = async (req, res) => {
   try {
-    const { title, description, workspaceId, assigneeId } = req.body
+    const { title, description, workspaceId, assigneeId, dueDate } = req.body
+    const userId = req.user.id
 
     if (!title || !workspaceId) {
       return res.status(400).json({ error: 'title and workspaceId are required' })
     }
 
     const usecase = new CreateTask()
-    const task = await usecase.execute({ title, description, workspaceId, assigneeId })
+    const task = await usecase.execute({ title, description, workspaceId, assigneeId, dueDate, userId })
     return res.status(201).json(task)
   } catch (error) {
+    if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER can create tasks' })
     if (error.message === 'MISSING_REQUIRED_FIELDS') {
       return res.status(400).json({ error: 'title and workspaceId are required' })
     }
@@ -37,15 +39,17 @@ const updateTaskStatus = async (req, res) => {
   try {
     const { id } = req.params
     const { status } = req.body
+    const userId = req.user.id
 
     if (!status) {
       return res.status(400).json({ error: 'status is required' })
     }
 
     const usecase = new UpdateTaskStatus()
-    const task = await usecase.execute({ id, status })
+    const task = await usecase.execute({ id, status, userId })
     return res.status(200).json(task)
   } catch (error) {
+    if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER can close tasks' })
     if (error.message === 'INVALID_STATUS') {
       return res.status(400).json({ error: 'status must be TODO, IN_PROGRESS or DONE' })
     }
@@ -60,15 +64,17 @@ const assignTask = async (req, res) => {
   try {
     const { id } = req.params
     const { assigneeId } = req.body
+    const userId = req.user.id
 
     if (!assigneeId) {
       return res.status(400).json({ error: 'assigneeId is required' })
     }
 
     const usecase = new AssignTask()
-    const task = await usecase.execute({ id, assigneeId })
+    const task = await usecase.execute({ id, assigneeId, userId })
     return res.status(200).json(task)
   } catch (error) {
+    if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER can assign tasks' })
     if (error.message === 'TASK_NOT_FOUND') {
       return res.status(404).json({ error: 'Task not found' })
     }

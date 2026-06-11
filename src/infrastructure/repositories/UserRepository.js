@@ -8,13 +8,32 @@ class UserRepository {
   }
 
   async findById(id) {
-    const user = await prisma.user.findUnique({ where: { id } })
-    return user ? new User(user) : null
+    const user = await prisma.user.findUnique({ 
+      where: { id },
+      include: {
+        memberships: {
+          include: {
+            workspace: {
+              include: {
+                members: {
+                  include: {
+                    user: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+    if (!user) return null
+    const { password, ...userWithoutPassword } = user
+    return userWithoutPassword
   }
 
-  async create({ email, name, id }) {
+  async create({ email, password, name, id }) {
     const user = await prisma.user.create({
-      data: { id, email, name }
+      data: { id, email, password, name }
     })
     return new User(user)
   }

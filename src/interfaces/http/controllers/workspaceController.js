@@ -1,6 +1,7 @@
 const CreateWorkspace = require('../../../application/usecases/CreateWorkspace')
 const JoinWorkspace = require('../../../application/usecases/JoinWorkspace')
 const GetWorkspace = require('../../../application/usecases/GetWorkspace')
+const ToggleMemberStatus = require('../../../application/usecases/ToggleMemberStatus')
 
 const createWorkspace = async (req, res) => {
   try {
@@ -52,4 +53,20 @@ const getWorkspace = async (req, res) => {
   }
 }
 
-module.exports = { createWorkspace, joinWorkspace, getWorkspace }
+const toggleMemberStatus = async (req, res) => {
+  try {
+    const { id, userId } = req.params
+    const { isActive } = req.body
+
+    const usecase = new ToggleMemberStatus()
+    const member = await usecase.execute({ workspaceId: id, userId, isActive })
+    return res.status(200).json(member)
+  } catch (error) {
+    if (error.message === 'MEMBER_NOT_FOUND') {
+      return res.status(404).json({ error: 'Member not found' })
+    }
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+module.exports = { createWorkspace, joinWorkspace, getWorkspace, toggleMemberStatus }

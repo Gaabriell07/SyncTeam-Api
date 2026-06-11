@@ -22,7 +22,7 @@ class JoinWorkspace {
     await this.workspaceRepository.addMember({
       workspaceId: workspace.id,
       userId,
-      role: role || 'DEVELOPER'
+      role: role || 'Miembro'
     })
 
     return workspace

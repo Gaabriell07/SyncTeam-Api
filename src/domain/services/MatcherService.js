@@ -41,14 +41,53 @@ class MatcherService {
       })
     }
 
-    const completeMatches = results
-      .filter(r => r.type === 'complete')
+    const completeMatches = this._mergeMatches(results.filter(r => r.type === 'complete'))
 
-    const partialMatches = results
-      .filter(r => r.type === 'partial')
+    const partialMatches = this._mergeMatches(results.filter(r => r.type === 'partial'))
       .sort((a, b) => b.score - a.score)
 
     return { completeMatches, partialMatches, totalMembers }
+  }
+
+  _mergeMatches(matches) {
+    if (matches.length === 0) return []
+
+    const byDay = {}
+    for (const match of matches) {
+      if (!byDay[match.slot.day]) byDay[match.slot.day] = []
+      byDay[match.slot.day].push(match)
+    }
+
+    const merged = []
+
+    for (const day in byDay) {
+      const dayMatches = byDay[day].sort((a, b) => a.slot.start.localeCompare(b.slot.start))
+
+      let current = dayMatches[0]
+
+      for (let i = 1; i < dayMatches.length; i++) {
+        const next = dayMatches[i]
+        
+        const sameAttendees = current.attendees.length === next.attendees.length && 
+                              current.attendees.every(id => next.attendees.includes(id))
+
+        if (current.slot.end === next.slot.start && sameAttendees) {
+          current = {
+            ...current,
+            slot: {
+              ...current.slot,
+              end: next.slot.end
+            }
+          }
+        } else {
+          merged.push(current)
+          current = next
+        }
+      }
+      merged.push(current)
+    }
+
+    return merged
   }
 }
 

@@ -2,9 +2,9 @@ const prisma = require('../database/prismaClient')
 const Task = require('../../domain/entities/Task')
 
 class TaskRepository {
-  async create({ id, title, description, workspaceId, assigneeId }) {
+  async create({ id, title, description, workspaceId, assigneeId, dueDate }) {
     const task = await prisma.task.create({
-      data: { id, title, description, workspaceId, assigneeId }
+      data: { id, title, description, workspaceId, assigneeId, dueDate }
     })
     return new Task(task)
   }
