@@ -45,6 +45,7 @@ class MatcherService {
 
     const partialMatches = this._mergeMatches(results.filter(r => r.type === 'partial'))
       .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
 
     return { completeMatches, partialMatches, totalMembers }
   }
