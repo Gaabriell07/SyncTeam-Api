@@ -41,6 +41,20 @@ class TaskRepository {
     })
     return new Task(task)
   }
+
+  async update({ id, title, description, dueDate }) {
+    const task = await prisma.task.update({
+      where: { id },
+      data: { title, description, dueDate }
+    })
+    return new Task(task)
+  }
+
+  async delete(id) {
+    await prisma.task.delete({
+      where: { id }
+    })
+  }
 }
 
 module.exports = TaskRepository

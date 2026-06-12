@@ -18,14 +18,27 @@ class JoinWorkspace {
       userId
     })
     if (existing) {
-      throw new Error('ALREADY_A_MEMBER')
+      if (existing.isActive) {
+        throw new Error('ALREADY_A_MEMBER')
+      } else {
+        await this.workspaceRepository.updateMemberStatus({
+          workspaceId: workspace.id,
+          userId,
+          isActive: true
+        })
+        await this.workspaceRepository.updateMemberRole({
+          workspaceId: workspace.id,
+          userId,
+          role: role || 'MEMBER'
+        })
+      }
+    } else {
+      await this.workspaceRepository.addMember({
+        workspaceId: workspace.id,
+        userId,
+        role: role || 'MEMBER'
+      })
     }
-
-    await this.workspaceRepository.addMember({
-      workspaceId: workspace.id,
-      userId,
-      role: role || 'MEMBER'
-    })
 
     try {
       await this.logActivity.execute({

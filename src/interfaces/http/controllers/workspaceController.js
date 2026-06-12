@@ -71,6 +71,7 @@ const toggleMemberStatus = async (req, res) => {
 }
 
 const UpdateMemberRole = require('../../../application/usecases/UpdateMemberRole')
+const DeleteWorkspace = require('../../../application/usecases/DeleteWorkspace')
 
 const updateMemberRole = async (req, res) => {
   try {
@@ -88,4 +89,23 @@ const updateMemberRole = async (req, res) => {
   }
 }
 
-module.exports = { createWorkspace, joinWorkspace, getWorkspace, toggleMemberStatus, updateMemberRole }
+const deleteWorkspace = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { userId } = req.user
+
+    const usecase = new DeleteWorkspace()
+    await usecase.execute({ workspaceId: id, userId })
+    return res.status(204).send()
+  } catch (error) {
+    if (error.message === 'WORKSPACE_NOT_FOUND') {
+      return res.status(404).json({ error: 'Workspace not found' })
+    }
+    if (error.message === 'UNAUTHORIZED') {
+      return res.status(403).json({ error: 'You do not have permission to delete this workspace' })
+    }
+    return res.status(500).json({ error: 'Internal server error', details: error.message })
+  }
+}
+
+module.exports = { createWorkspace, joinWorkspace, getWorkspace, toggleMemberStatus, updateMemberRole, deleteWorkspace }

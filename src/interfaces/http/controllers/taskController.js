@@ -2,6 +2,8 @@ const CreateTask = require('../../../application/usecases/CreateTask')
 const GetWorkspaceTasks = require('../../../application/usecases/GetWorkspaceTasks')
 const UpdateTaskStatus = require('../../../application/usecases/UpdateTaskStatus')
 const AssignTask = require('../../../application/usecases/AssignTask')
+const EditTask = require('../../../application/usecases/EditTask')
+const DeleteTask = require('../../../application/usecases/DeleteTask')
 
 const createTask = async (req, res) => {
   try {
@@ -25,7 +27,7 @@ const createTask = async (req, res) => {
     if (error.message === 'MISSING_REQUIRED_FIELDS') {
       return res.status(400).json({ error: 'title and workspaceId are required' })
     }
-    return res.status(500).json({ error: 'Internal server error' })
+    console.error('TASK_CREATION_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
   }
 }
 
@@ -36,7 +38,7 @@ const getWorkspaceTasks = async (req, res) => {
     const tasks = await usecase.execute(workspaceId)
     return res.status(200).json(tasks)
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' })
+    console.error('TASK_CREATION_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
   }
 }
 
@@ -66,7 +68,7 @@ const updateTaskStatus = async (req, res) => {
     if (error.message === 'TASK_NOT_FOUND') {
       return res.status(404).json({ error: 'Task not found' })
     }
-    return res.status(500).json({ error: 'Internal server error' })
+    console.error('TASK_CREATION_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
   }
 }
 
@@ -93,8 +95,53 @@ const assignTask = async (req, res) => {
     if (error.message === 'TASK_NOT_FOUND') {
       return res.status(404).json({ error: 'Task not found' })
     }
-    return res.status(500).json({ error: 'Internal server error' })
+    console.error('TASK_CREATION_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
   }
 }
 
-module.exports = { createTask, getWorkspaceTasks, updateTaskStatus, assignTask }
+const editTask = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { title, description, dueDate } = req.body
+    const userId = req.user.id
+
+    const usecase = new EditTask()
+    const task = await usecase.execute({ id, title, description, dueDate, userId })
+    
+    // Emit task updated event
+    const io = req.app.get('io')
+    if (io) io.to(task.workspaceId).emit('taskEdited', task)
+    
+    return res.status(200).json(task)
+  } catch (error) {
+    if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER or ASSIGNEE can edit tasks' })
+    if (error.message === 'TASK_NOT_FOUND') {
+      return res.status(404).json({ error: 'Task not found' })
+    }
+    console.error('TASK_EDIT_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
+  }
+}
+
+const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id
+
+    const usecase = new DeleteTask()
+    const result = await usecase.execute({ id, userId })
+    
+    // Emit task deleted event
+    const io = req.app.get('io')
+    if (io) io.to(result.workspaceId).emit('taskDeleted', result)
+    
+    return res.status(200).json({ message: 'Task deleted successfully' })
+  } catch (error) {
+    if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER or ASSIGNEE can delete tasks' })
+    if (error.message === 'TASK_NOT_FOUND') {
+      return res.status(404).json({ error: 'Task not found' })
+    }
+    console.error('TASK_DELETE_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
+  }
+}
+
+module.exports = { createTask, getWorkspaceTasks, updateTaskStatus, assignTask, editTask, deleteTask }

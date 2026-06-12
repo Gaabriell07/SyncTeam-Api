@@ -1,19 +1,13 @@
 const TaskRepository = require('../../infrastructure/repositories/TaskRepository')
 const WorkspaceRepository = require('../../infrastructure/repositories/WorkspaceRepository')
 
-const VALID_STATUSES = ['TODO', 'IN_PROGRESS', 'DONE']
-
-class UpdateTaskStatus {
+class EditTask {
   constructor() {
     this.taskRepository = new TaskRepository()
     this.workspaceRepository = new WorkspaceRepository()
   }
 
-  async execute({ id, status, userId }) {
-    if (!VALID_STATUSES.includes(status)) {
-      throw new Error('INVALID_STATUS')
-    }
-
+  async execute({ id, title, description, dueDate, userId }) {
     const task = await this.taskRepository.findById(id)
     if (!task) {
       throw new Error('TASK_NOT_FOUND')
@@ -24,10 +18,15 @@ class UpdateTaskStatus {
       throw new Error('FORBIDDEN')
     }
 
-    // Allow any member to update task status
+    // Allow any member to edit the task
 
-    return await this.taskRepository.updateStatus({ id, status })
+    return await this.taskRepository.update({
+      id,
+      title: title !== undefined ? title : task.title,
+      description: description !== undefined ? description : task.description,
+      dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : task.dueDate
+    })
   }
 }
 
-module.exports = UpdateTaskStatus
+module.exports = EditTask

@@ -12,6 +12,7 @@ class UserRepository {
       where: { id },
       include: {
         memberships: {
+          where: { isActive: true },
           include: {
             workspace: {
               include: {

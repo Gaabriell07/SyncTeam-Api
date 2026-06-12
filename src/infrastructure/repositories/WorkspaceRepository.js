@@ -50,6 +50,15 @@ class WorkspaceRepository {
       data: { role }
     })
   }
+
+  async deleteWorkspace(id) {
+    return prisma.$transaction([
+      prisma.task.deleteMany({ where: { workspaceId: id } }),
+      prisma.availability.deleteMany({ where: { workspaceId: id } }),
+      prisma.workspaceMember.deleteMany({ where: { workspaceId: id } }),
+      prisma.workspace.delete({ where: { id } })
+    ])
+  }
 }
 
 module.exports = WorkspaceRepository

@@ -19,7 +19,7 @@ class CreateTask {
     }
 
     const member = await this.workspaceRepository.findMember({ workspaceId, userId })
-    if (!member || member.role !== 'LEADER') {
+    if (!member) {
       throw new Error('FORBIDDEN')
     }
 
@@ -48,7 +48,7 @@ class CreateTask {
       await this.logActivity.execute({
         userId,
         action: 'CREATED_TASK',
-        details: { taskId: task.id, title: task.title, workspaceId }
+        details: { message: `Has creado la tarea "${task.title}" en el espacio de trabajo.` }
       })
     } catch (err) {
       console.error('Failed to log activity:', err)
