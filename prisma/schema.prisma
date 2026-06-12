@@ -16,6 +16,7 @@ model User {
   assignedTasks  Task[]
   memberships    WorkspaceMember[]
   activityLogs   ActivityLog[]
+  notifications  Notification[]
 }
 
 model Workspace {
@@ -74,6 +75,18 @@ model ActivityLog {
   userId    String
   action    String
   details   Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // TASK_STATUS_CHANGE | TASK_DUE_SOON | TASK_OVERDUE | GENERAL
+  isRead    Boolean  @default(false)
+  metadata  Json?    // { taskId, workspaceId, changedBy, newStatus }
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
 }

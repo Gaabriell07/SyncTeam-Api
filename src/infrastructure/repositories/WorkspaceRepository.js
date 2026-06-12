@@ -51,6 +51,13 @@ class WorkspaceRepository {
     })
   }
 
+  async findMembers(workspaceId) {
+    return prisma.workspaceMember.findMany({
+      where: { workspaceId, isActive: true },
+      include: { user: true }
+    })
+  }
+
   async deleteWorkspace(id) {
     return prisma.$transaction([
       prisma.task.deleteMany({ where: { workspaceId: id } }),

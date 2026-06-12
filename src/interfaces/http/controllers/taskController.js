@@ -52,23 +52,23 @@ const updateTaskStatus = async (req, res) => {
       return res.status(400).json({ error: 'status is required' })
     }
 
-    const usecase = new UpdateTaskStatus()
+    const io = req.app.get('io')
+    const usecase = new UpdateTaskStatus(io)
     const task = await usecase.execute({ id, status, userId })
     
-    // Emit task updated event
-    const io = req.app.get('io')
+    // Emit task updated event to workspace room
     if (io) io.to(task.workspaceId).emit('taskUpdated', task)
     
     return res.status(200).json(task)
   } catch (error) {
-    if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER can close tasks' })
+    if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'No tienes permiso para cambiar el estado' })
     if (error.message === 'INVALID_STATUS') {
       return res.status(400).json({ error: 'status must be TODO, IN_PROGRESS or DONE' })
     }
     if (error.message === 'TASK_NOT_FOUND') {
       return res.status(404).json({ error: 'Task not found' })
     }
-    console.error('TASK_CREATION_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
+    console.error('TASK_STATUS_ERROR:', error); return res.status(500).json({ error: 'Internal server error', details: error.message })
   }
 }
 
