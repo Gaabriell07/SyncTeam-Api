@@ -70,4 +70,22 @@ const toggleMemberStatus = async (req, res) => {
   }
 }
 
-module.exports = { createWorkspace, joinWorkspace, getWorkspace, toggleMemberStatus }
+const UpdateMemberRole = require('../../../application/usecases/UpdateMemberRole')
+
+const updateMemberRole = async (req, res) => {
+  try {
+    const { id, userId } = req.params
+    const { role } = req.body
+
+    const usecase = new UpdateMemberRole()
+    const member = await usecase.execute({ workspaceId: id, userId, role })
+    return res.status(200).json(member)
+  } catch (error) {
+    if (error.message === 'MEMBER_NOT_FOUND') {
+      return res.status(404).json({ error: 'Member not found' })
+    }
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+module.exports = { createWorkspace, joinWorkspace, getWorkspace, toggleMemberStatus, updateMemberRole }

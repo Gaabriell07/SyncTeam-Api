@@ -11,6 +11,23 @@ const taskRoutes = require('./interfaces/http/routes/taskRoutes')
 const app = express()
 const PORT = process.env.PORT || 3000
 
+const http = require('http')
+const { Server } = require('socket.io')
+
+const server = http.createServer(app)
+const io = new Server(server, { cors: { origin: '*' } })
+
+app.set('io', io)
+
+io.on('connection', (socket) => {
+  socket.on('joinWorkspace', (workspaceId) => {
+    if (workspaceId) {
+      socket.join(workspaceId)
+      console.log(`Socket ${socket.id} joined workspace ${workspaceId}`)
+    }
+  })
+})
+
 app.use(cors())
 app.use(express.json())
 
@@ -24,7 +41,7 @@ app.use('/api/availability', availabilityRoutes)
 app.use('/api/matcher', matcherRoutes)
 app.use('/api/tasks', taskRoutes)
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
 

@@ -24,14 +24,18 @@ class JoinWorkspace {
     await this.workspaceRepository.addMember({
       workspaceId: workspace.id,
       userId,
-      role: role || 'Miembro'
+      role: role || 'MEMBER'
     })
 
-    await this.logActivity.execute({
-      userId,
-      action: 'UNIR_ESPACIO',
-      details: { message: `Te has unido al espacio de trabajo "${workspace.name}".` }
-    })
+    try {
+      await this.logActivity.execute({
+        userId,
+        action: 'UNIR_ESPACIO',
+        details: { message: `Te has unido al espacio de trabajo "${workspace.name}".` }
+      })
+    } catch (logError) {
+      console.error('Error al registrar la actividad:', logError)
+    }
 
     return workspace
   }

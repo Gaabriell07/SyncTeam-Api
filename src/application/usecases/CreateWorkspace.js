@@ -21,11 +21,15 @@ class CreateWorkspace {
       role: 'LEADER'
     })
 
-    await this.logActivity.execute({
-      userId,
-      action: 'CREAR_ESPACIO',
-      details: { message: `Has creado el espacio de trabajo "${name}".` }
-    })
+    try {
+      await this.logActivity.execute({
+        userId,
+        action: 'CREAR_ESPACIO',
+        details: { message: `Has creado el espacio de trabajo "${name}".` }
+      })
+    } catch (logError) {
+      console.error('Error al registrar la actividad:', logError)
+    }
 
     return workspace
   }

@@ -43,6 +43,13 @@ class WorkspaceRepository {
       data: { isActive }
     })
   }
+
+  async updateMemberRole({ workspaceId, userId, role }) {
+    return prisma.workspaceMember.update({
+      where: { userId_workspaceId: { userId, workspaceId } },
+      data: { role }
+    })
+  }
 }
 
 module.exports = WorkspaceRepository

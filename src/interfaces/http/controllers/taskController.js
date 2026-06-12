@@ -14,6 +14,11 @@ const createTask = async (req, res) => {
 
     const usecase = new CreateTask()
     const task = await usecase.execute({ title, description, workspaceId, assigneeId, dueDate, userId })
+    
+    // Emit task created event
+    const io = req.app.get('io')
+    if (io) io.to(workspaceId).emit('taskCreated', task)
+    
     return res.status(201).json(task)
   } catch (error) {
     if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER can create tasks' })
@@ -47,6 +52,11 @@ const updateTaskStatus = async (req, res) => {
 
     const usecase = new UpdateTaskStatus()
     const task = await usecase.execute({ id, status, userId })
+    
+    // Emit task updated event
+    const io = req.app.get('io')
+    if (io) io.to(task.workspaceId).emit('taskUpdated', task)
+    
     return res.status(200).json(task)
   } catch (error) {
     if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER can close tasks' })
@@ -72,6 +82,11 @@ const assignTask = async (req, res) => {
 
     const usecase = new AssignTask()
     const task = await usecase.execute({ id, assigneeId, userId })
+    
+    // Emit task updated event
+    const io = req.app.get('io')
+    if (io) io.to(task.workspaceId).emit('taskUpdated', task)
+    
     return res.status(200).json(task)
   } catch (error) {
     if (error.message === 'FORBIDDEN') return res.status(403).json({ error: 'Only LEADER can assign tasks' })
